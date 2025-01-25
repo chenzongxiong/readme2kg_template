@@ -98,5 +98,4 @@ if __name__ == "__main__":
         assert t1 == t2, f'token changed: \n{t1}\n{t2}'
 
     print(f"Predicted {len(predicted_doc.annotations)} annotations")
-    import ipdb; ipdb.set_trace()
     print(predicted_doc.annotations)
