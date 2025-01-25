@@ -27,9 +27,12 @@ class DummpyPredictor(BasePredictor):
         for sent in doc.sentences:
             tokens = doc.sentence_tokens(sent)
             # NOTE: PUT YOUR PREDICTION LOGIC HERE
-            label = self.predict(sentence=sent)
+            span_tokens, label = self.predict(sentence=sent, tokens=tokens)
             # create the annotation instances
-            annotation = utils.make_annotation(tokens=tokens, label=label)
+            if span_tokens is None:
+                continue
+
+            annotation = utils.make_annotation(tokens=span_tokens, label=label)
             annotations.append(annotation)
 
         result = utils.make_webanno_document(
@@ -40,10 +43,41 @@ class DummpyPredictor(BasePredictor):
 
         return result
 
-    def predict(self, sentence, **kwargs):
+    def predict(self, sentence, tokens):
+        start_char = random.randint(tokens[0].start, tokens[-1].end - 1)
+        end_char = random.randint(start_char + 1, tokens[-1].end)
+
+        span_tokens = []
+        for token in tokens:
+            if token.end < start_char:
+                continue
+            if token.start > end_char:
+                continue
+
+            span_tokens.append(token)
+
+        if len(span_tokens) == 0:
+            return None, None
+
+        first, last = span_tokens[0], span_tokens[-1]
+        span_tokens = span_tokens[1:-1]
+        if first.start < start_char:
+            text = token.text[start_char - first.start:]
+            if len(text) > 0:
+                token = Token(idx=f'{first.idx}.99', sentence_idx=first.sentence_idx, start=start_char, end=first.end, text=text)
+                span_tokens.insert(0, token)
+        if last.end > end_char:
+            text = token.text[:end_char-last.start]
+            if len(text) > 0:
+                token = Token(idx=f'{last.idx}.99', sentence_idx=last.sentence_idx, start=last.start, end=end_char, text=text)
+                span_tokens.append(token)
+
+        if len(span_tokens) == 0:
+            return None, None
+
         # Random select a label from LABELS
         label = random.choice(LABELS)
-        return label
+        return span_tokens, label
 
 
 if __name__ == "__main__":
@@ -64,3 +98,5 @@ if __name__ == "__main__":
         assert t1 == t2, f'token changed: \n{t1}\n{t2}'
 
     print(f"Predicted {len(predicted_doc.annotations)} annotations")
+    import ipdb; ipdb.set_trace()
+    print(predicted_doc.annotations)
