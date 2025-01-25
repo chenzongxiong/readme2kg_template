@@ -21,6 +21,7 @@ LABELS = [
     'WORKSHOP'
 ]
 
+
 def to_char_bio(src_path: str, ref_path: str) -> List[List[str]]:
     ref_doc = webanno_tsv_read_file(ref_path)
 

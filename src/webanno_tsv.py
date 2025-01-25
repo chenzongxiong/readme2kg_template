@@ -383,7 +383,6 @@ def _tsv_read_lines(lines: List[str], overriding_layer_names: List[Tuple[str, Li
         sentence = text[start_pos:end_pos]
         sentences.append(Sentence(idx=sentence_idx, text=sentence))
 
-    # import ipdb; ipdb.set_trace()
     return Document(layer_defs=layer_defs, sentences=sentences, tokens=tokens, annotations=annotations)
 
 def webanno_tsv_read_string(tsv: str, overriding_layer_def: List[Tuple[str, List[str]]] = None) -> Document:
