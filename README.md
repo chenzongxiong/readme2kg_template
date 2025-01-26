@@ -13,5 +13,5 @@ The contents of this repository includes scripts and data files used for the afo
 -----
 # Usage
 
-The scoring script `run_scoring.sh` calls [src/scoring.py](https://github.com/chenzongxiong/readme2kg_template/blob/main/src/scoring.py) with the following arguments:
+To run the scoring script directly:
       `python src/scoring.py --reference_dir ./data/train --prediction_dir ./results/prediction`
