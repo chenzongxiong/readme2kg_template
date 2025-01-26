@@ -2,7 +2,7 @@
 
 This repository hosts the template project used for the [README2KG Shared Task](https://www.codabench.org/competitions/4925/) hosted on [Condabench](https://www.codabench.org).
 
------
+
 # Contents
 
 The contents of this repository includes scripts and data files used for the aforementioned competition:
@@ -10,7 +10,7 @@ The contents of this repository includes scripts and data files used for the afo
 * [predictor.py](https://github.com/chenzongxiong/readme2kg_template/blob/main/src/predictor.py) in the [src](https://github.com/chenzongxiong/readme2kg_template/blob/main/src/) directory contain a sample source code for parsing and writing WebAnno TSV files.
 * A [scoring script](https://github.com/chenzongxiong/readme2kg_template/blob/main/run_scoring.sh) is also provided to allow participants to evaluate their NER system locally.
 
------
+
 # Usage
 
 To run the scoring script directly:
