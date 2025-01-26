@@ -81,7 +81,9 @@ class DummpyPredictor(BasePredictor):
 
 
 if __name__ == "__main__":
+    # Path to annotated files
     file_path = './data/train/231sm_Low_Resource_KBP_master_README.md.tsv'
+    # Path to un-annotated files
     file_path = './data/test/231sm_Low_Resource_KBP_master_README.md.tsv'
     ref_doc = webanno_tsv_read_file(file_path)
 
