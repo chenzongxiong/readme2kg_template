@@ -24,7 +24,6 @@ LABELS = [
 
 def to_char_bio(src_path: str, ref_path: str) -> List[List[str]]:
     ref_doc = webanno_tsv_read_file(ref_path)
-
     # Parse the WebAnno TSV file
     doc = webanno_tsv_read_file(src_path)
     # Initialize a list to store character-level BIO tags
@@ -55,19 +54,17 @@ def to_char_bio(src_path: str, ref_path: str) -> List[List[str]]:
                 msg = f"ERROR: src: {src_path}, annotated '{annotation.text}', text: '{ref_doc.text[start_char:end_char]}'"
                 print(msg)
 
-            if bio_tags[start_char] == '#':
-                # NOTE: this position, we are not interested in, since all position interested in are marked as 'O'
-                continue
-
             if 'I-' in bio_tags[start_char]:
                 # Overlapping, it's annotated by another annotations, we connect them as one annotations
                 pass
             else:
-                # Assign BIO tags to characters in the entity span
-                bio_tags[start_char] = f'B-{label}'  # Beginning of the entity
+                if bio_tags[start_char] != '#':
+                    # Assign BIO tags to characters in the entity span
+                    bio_tags[start_char] = f'B-{label}'  # Beginning of the entity
 
             for i in range(start_char + 1, end_char):
-                bio_tags[i] = f'I-{label}'  # Inside the entity
+                if bio_tags[i] != '#':
+                    bio_tags[i] = f'I-{label}'  # Inside the entity
 
         # Remove unannotated sentences from bio list.
         bio_tags = [x for x in filter(lambda x: x != '#', bio_tags)]
