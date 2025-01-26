@@ -54,6 +54,7 @@ def make_webanno_document(sentences: List[Sentence], tokens: List[Token], annota
         annotations=annotations,
     )
 
+
 def replace_webanno_annotations(doc: Document, annotations: List[Annotation]) -> Document:
     doc = replace(doc, annotations=annotations)
     return doc

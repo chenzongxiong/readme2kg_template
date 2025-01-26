@@ -30,15 +30,15 @@ def to_char_bio(src_path: str, ref_path: str) -> List[List[str]]:
     # Initialize a list to store character-level BIO tags
     bio_tags_list = []
     for target_label in LABELS:
-        bio_tags = ['#'] * len(doc.text)  # Default to '#' for all characters
-        # Pick interested sentences and default to 'O'
+        bio_tags = ['#'] * len(ref_doc.text)  # Default to '#' for all characters
+        # Pick interested sentences and default them to 'O'
         for annotation in ref_doc.annotations:
             label = annotation.label
             if label != target_label:
                 continue
-            sentences = doc.annotation_sentences(annotation)
+            sentences = ref_doc.annotation_sentences(annotation)
             for sentence in sentences:
-                tokens = doc.sentence_tokens(sentence)
+                tokens = ref_doc.sentence_tokens(sentence)
                 start_char, end_char = tokens[0].start, tokens[-1].end
                 bio_tags[start_char:end_char] = ['O'] * (end_char-start_char)
 
@@ -55,11 +55,15 @@ def to_char_bio(src_path: str, ref_path: str) -> List[List[str]]:
                 msg = f"ERROR: src: {src_path}, annotated '{annotation.text}', text: '{ref_doc.text[start_char:end_char]}'"
                 print(msg)
 
-            # Assign BIO tags to characters in the entity span
+            if bio_tags[start_char] == '#':
+                # NOTE: this position, we are not interested in, since all position interested in are marked as 'O'
+                continue
+
             if 'I-' in bio_tags[start_char]:
-                # It's inside other ENTITY, skip it
+                # Overlapping, it's annotated by another annotations, we connect them as one annotations
                 pass
             else:
+                # Assign BIO tags to characters in the entity span
                 bio_tags[start_char] = f'B-{label}'  # Beginning of the entity
 
             for i in range(start_char + 1, end_char):
@@ -67,10 +71,10 @@ def to_char_bio(src_path: str, ref_path: str) -> List[List[str]]:
 
         # Remove unannotated sentences from bio list.
         bio_tags = [x for x in filter(lambda x: x != '#', bio_tags)]
-        if len(bio_tags) > 0:
-            bio_tags_list.append(bio_tags)
+        bio_tags_list.append(bio_tags)
 
     return bio_tags_list
+
 
 def get_parse():
     parser = argparse.ArgumentParser(description="")
@@ -103,7 +107,6 @@ if __name__ == "__main__":
         all_ref_bio_tags_list.append(to_char_bio(src_path, ref_path))
 
     pred_file_names = sorted([fp for fp in os.listdir(pred_dir) if os.path.isfile(f'{pred_dir}/{fp}') and fp.endswith('.tsv')])
-
     all_pred_bio_tags_list = []
     for idx, ref_file_name in enumerate(ref_file_names):
         try:
@@ -112,19 +115,27 @@ if __name__ == "__main__":
             all_pred_bio_tags_list.append(to_char_bio(src_path, ref_path))
         except FileNotFoundError:
             nbr_labels = len(all_ref_bio_tags_list[idx])
+            assert nbr_labels == len(LABELS), "ERROR: reference tags doesn't have ${len(LABELS)} labels."
             pred = []
             for label_idx in range(nbr_labels):
                 pred.append(['O'] * len(all_ref_bio_tags_list[idx][label_idx]))
+
             print(f"WARN: {ref_file_name} is missing, fill 'O' list as default prediction")
             all_pred_bio_tags_list.append(pred)
 
     # Sanity checking
-    for ref_list, pred_list in zip(all_ref_bio_tags_list, all_pred_bio_tags_list):
-        for ref, pred in zip(ref_list, pred_list):
-            assert len(ref) == len(pred)
+    for idx, (ref_list, pred_list) in enumerate(zip(all_ref_bio_tags_list, all_pred_bio_tags_list)):
+        for label_idx, (ref, pred) in enumerate(zip(ref_list, pred_list)):
+            assert len(ref) == len(pred), f'ERROR: {ref_file_names[idx]}, label: {LABELS[label_idx]}, reference length: {len(ref)}, prediction length: {len(pred)}'
+            # all_ref_bio_tags_list[idx][label_idx] = [x for x in filter(lambda x: x != '#', ref)]
+            # all_pred_bio_tags_list[idx][label_idx] = [x for x in filter(lambda x: x != '#', pred)]
+            # print('ref: ', len(all_ref_bio_tags_list[idx][label_idx]), len(ref))
+            # print('pred: ', len(all_pred_bio_tags_list[idx][label_idx]), len(pred))
 
     flatten_ref_bio_tags_list = reduce(lambda x, y: x + y, all_ref_bio_tags_list)
     flatten_pred_bio_tags_list = reduce(lambda x, y: x + y, all_pred_bio_tags_list)
+    assert len(flatten_ref_bio_tags_list) == len(flatten_pred_bio_tags_list), "ERROR: reference and prediction results are inconsistent"
+
     scores = classification_report(flatten_ref_bio_tags_list, flatten_pred_bio_tags_list, output_dict=True, scheme=IOB2)
 
     flatten_scores = {}
