@@ -44,6 +44,9 @@ class DummpyPredictor(BasePredictor):
         return result
 
     def predict(self, sentence, tokens):
+        '''
+        Only predict one label for each sentence
+        '''
         start_char = random.randint(tokens[0].start, tokens[-1].end - 1)
         end_char = random.randint(start_char + 1, tokens[-1].end)
 
