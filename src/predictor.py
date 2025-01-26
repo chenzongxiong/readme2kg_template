@@ -105,3 +105,6 @@ if __name__ == "__main__":
 
     print(f"Predicted {len(predicted_doc.annotations)} annotations")
     print(predicted_doc.annotations)
+    prediction_path = 'results/prediction/231sm_Low_Resource_KBP_master_README.md.tsv'
+    with open(prediction_path, 'w') as fd:
+        fd.write(predicted_doc.tsv())
