@@ -2,6 +2,7 @@ from functools import reduce
 from collections import defaultdict
 from webanno_tsv import Document, Annotation, Token, Sentence
 from typing import List
+from dataclasses import replace
 
 
 LABEL_IDS = defaultdict(int)
@@ -52,3 +53,7 @@ def make_webanno_document(sentences: List[Sentence], tokens: List[Token], annota
         tokens=tokens,
         annotations=annotations,
     )
+
+def replace_webanno_annotations(doc: Document, annotations: List[Annotation]) -> Document:
+    doc = replace(doc, annotations=annotations)
+    return doc

@@ -93,6 +93,9 @@ if __name__ == "__main__":
 
     ref_file_names = sorted([fp for fp in os.listdir(ref_dir) if os.path.isfile(f'{ref_dir}/{fp}') and fp.endswith('.tsv')])
 
+    if len(ref_file_names) == 0:
+        raise Exception("ERROR: No reference files found, configuration error?")
+
     all_ref_bio_tags_list = []
     for ref_file_name in ref_file_names:
         src_path = os.path.join(ref_dir, ref_file_name)
