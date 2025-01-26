@@ -1,11 +1,11 @@
 import argparse
 import json
 import os
+from collections import defaultdict
 from functools import reduce
 from webanno_tsv import webanno_tsv_read_file, Document, Annotation
 from typing import List, Union
-from seqeval.metrics import classification_report
-from seqeval.scheme import IOB2
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score, confusion_matrix
 
 
 LABELS = [
@@ -20,6 +20,10 @@ LABELS = [
     'SOFTWARE',
     'WORKSHOP'
 ]
+
+
+def flatten(lst):
+    return reduce(lambda x, y: x + y, lst)
 
 
 def to_char_bio(src_path: str, ref_path: str) -> List[List[str]]:
@@ -119,34 +123,62 @@ if __name__ == "__main__":
 
             print(f"WARN: {ref_file_name} is missing, fill 'O' list as default prediction")
             all_pred_bio_tags_list.append(pred)
-
     # Sanity checking
     for idx, (ref_list, pred_list) in enumerate(zip(all_ref_bio_tags_list, all_pred_bio_tags_list)):
         for label_idx, (ref, pred) in enumerate(zip(ref_list, pred_list)):
             assert len(ref) == len(pred), f'ERROR: {ref_file_names[idx]}, label: {LABELS[label_idx]}, reference length: {len(ref)}, prediction length: {len(pred)}'
-            # all_ref_bio_tags_list[idx][label_idx] = [x for x in filter(lambda x: x != '#', ref)]
-            # all_pred_bio_tags_list[idx][label_idx] = [x for x in filter(lambda x: x != '#', pred)]
-            # print('ref: ', len(all_ref_bio_tags_list[idx][label_idx]), len(ref))
-            # print('pred: ', len(all_pred_bio_tags_list[idx][label_idx]), len(pred))
 
-    flatten_ref_bio_tags_list = reduce(lambda x, y: x + y, all_ref_bio_tags_list)
-    flatten_pred_bio_tags_list = reduce(lambda x, y: x + y, all_pred_bio_tags_list)
-    assert len(flatten_ref_bio_tags_list) == len(flatten_pred_bio_tags_list), "ERROR: reference and prediction results are inconsistent"
+    scores = {}
+    ################################################################################
+    # Consider whole dataset
+    ################################################################################
+    ref_bio_tags_list = flatten(flatten(all_ref_bio_tags_list))
+    pred_bio_tags_list = flatten(flatten(all_pred_bio_tags_list))
 
-    scores = classification_report(flatten_ref_bio_tags_list, flatten_pred_bio_tags_list, output_dict=True, scheme=IOB2)
+    accuracy = accuracy_score(ref_bio_tags_list, pred_bio_tags_list)
+    scores['overall_accuracy'] = accuracy
+    average = 'micro'
+    ref_bio_tags_list = flatten(flatten(all_ref_bio_tags_list))
+    pred_bio_tags_list = flatten(flatten(all_pred_bio_tags_list))
 
-    flatten_scores = {}
-    for k1 in scores.keys():
-        for k2 in scores[k1]:
-            k = f'{k1}_{k2}'.replace(' ', '_')
-            k = f'{k}'.replace('-', '_')
-            if scores[k1][k2].dtype == float:
-                flatten_scores[k] = float(scores[k1][k2])
-            elif scores[k1][k2].dtype == int:
-                flatten_scores[k] = int(scores[k1][k2])
-            else:
-                flatten_scores[k] = scores[k1][k2]
+    f1 = f1_score(ref_bio_tags_list, pred_bio_tags_list, average=average)
+    precision = precision_score(ref_bio_tags_list, pred_bio_tags_list, average=average)
+    recall = recall_score(ref_bio_tags_list, pred_bio_tags_list, average=average)
+    scores[f"overall_{average}_precision"] = precision
+    scores[f"overall_{average}_recall"] = recall
+    scores[f"overall_{average}_f1"] = f1
 
-    print("Score: \n", json.dumps(flatten_scores, indent=2))
+
+    ################################################################################
+    # For each class
+    ################################################################################
+    label_to_ref_bio_tags_list = defaultdict(list)
+    label_to_pred_bio_tags_list = defaultdict(list)
+    for ref_bio_tags_list, pred_bio_tags_list in zip(all_ref_bio_tags_list, all_pred_bio_tags_list):
+        if len(ref_bio_tags_list) != len(LABELS):
+            print('ERROR: ref bio tags list')
+        if len(pred_bio_tags_list) != len(LABELS):
+            print('ERROR: pred bio tags list')
+
+        for label, ref_bio_tags, pred_bio_tags in zip(LABELS, ref_bio_tags_list, pred_bio_tags_list):
+            label_to_ref_bio_tags_list[label].extend(ref_bio_tags)
+            label_to_pred_bio_tags_list[label].extend(pred_bio_tags)
+            if len(label_to_ref_bio_tags_list[label]) != len(label_to_pred_bio_tags_list[label]):
+                print('ERROR: label_to_ref_pred_bio_tags')
+
+
+    for label in label_to_ref_bio_tags_list.keys():
+        ref_bio_tags_list = label_to_ref_bio_tags_list[label]
+        pred_bio_tags_list = label_to_pred_bio_tags_list[label]
+        accuracy = accuracy_score(ref_bio_tags_list, pred_bio_tags_list)
+        f1 = f1_score(ref_bio_tags_list, pred_bio_tags_list, average=average)
+        precision = precision_score(ref_bio_tags_list, pred_bio_tags_list, average=average)
+        recall = recall_score(ref_bio_tags_list, pred_bio_tags_list, average=average)
+        scores[f"{label}_{average}_precision"] = precision
+        scores[f"{label}_{average}_recall"] = recall
+        scores[f"{label}_{average}_f1"] = f1
+
+    print("Scores:\n", json.dumps(scores, indent=2))
+
     with open(os.path.join(score_dir, 'scores.json'), 'w') as fd:
-        json.dump(flatten_scores, fd, indent=2)
+        json.dump(scores, fd, indent=2)
