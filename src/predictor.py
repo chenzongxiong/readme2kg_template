@@ -35,12 +35,13 @@ class DummpyPredictor(BasePredictor):
             annotation = utils.make_annotation(tokens=span_tokens, label=label)
             annotations.append(annotation)
 
-        result = utils.make_webanno_document(
-            annotations=annotations,
-            sentences=doc.sentences,
-            tokens=doc.tokens
-        )
-
+        # result = utils.make_webanno_document(
+        #     annotations=annotations,
+        #     sentences=doc.sentences,
+        #     tokens=doc.tokens
+        # )
+        # NOTE: `replace` has better performance
+        result = utils.replace_webanno_annotations(doc, annotations=annotations)
         return result
 
     def predict(self, sentence, tokens):
