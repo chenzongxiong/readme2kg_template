@@ -1,0 +1,5 @@
+joblib==1.4.2 ; python_version >= "3.10"
+numpy==2.2.2 ; python_version >= "3.10"
+scikit-learn==1.6.1 ; python_version >= "3.10"
+scipy==1.15.1 ; python_version >= "3.10"
+threadpoolctl==3.5.0 ; python_version >= "3.10"
