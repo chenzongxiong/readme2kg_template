@@ -137,7 +137,7 @@ if __name__ == "__main__":
 
     accuracy = accuracy_score(ref_bio_tags_list, pred_bio_tags_list)
     scores['overall_accuracy'] = accuracy
-    average = 'micro'
+    average = 'macro'
     ref_bio_tags_list = flatten(flatten(all_ref_bio_tags_list))
     pred_bio_tags_list = flatten(flatten(all_pred_bio_tags_list))
 
