@@ -16,6 +16,23 @@ The contents of this repository include scripts and data files used for the afor
 
 
 # Usage
+## Setup
+We use [poertry](https://python-poetry.org/docs/) to manage our template project by default. 
+
+```
+conda create --name readme poetry
+poetry install
+```
+
+Or  
+use `pip` to install dependencies
+
+```
+pip install -r requirements.txt
+```
+
 
 To run the scoring script directly:
-      `python src/scoring.py --reference_dir ./data/train --prediction_dir ./results/prediction`
+```
+python src/scoring.py --reference_dir ./data/train --prediction_dir ./results/prediction
+```
