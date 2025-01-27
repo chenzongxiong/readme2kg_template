@@ -58,3 +58,43 @@ def make_webanno_document(sentences: List[Sentence], tokens: List[Token], annota
 def replace_webanno_annotations(doc: Document, annotations: List[Annotation]) -> Document:
     doc = replace(doc, annotations=annotations)
     return doc
+
+
+def make_span_tokens(tokens: List[Token], start_char: int, end_char: int) -> List[Token] | None:
+    '''
+    Example: Given a list of token List[Token] = [(Few-Shot_ED.json.zip, 86, 107)],
+    the correct annotation is `<DATASET>Few-Shot_ED</DATASET>.json.zip`, the start char is 86, end char is 97.
+    We need to generate the correct span tokens e.g. [(Few-Shot_ED, 86, 97)].
+    Using the function can achieve this functionality
+    '''
+    span_tokens = []
+    for token in tokens:
+        if token.end < start_char:
+            continue
+        if token.start > end_char:
+            continue
+
+        span_tokens.append(token)
+
+    if len(span_tokens) == 0:
+        return None
+
+    first, last = span_tokens[0], span_tokens[-1]
+    # NOTE: only the first and last tokens are in corner case
+    span_tokens = span_tokens[1:-1]
+    if first.start < start_char:
+        text = token.text[start_char - first.start:]
+        if len(text) > 0:
+            token = Token(idx=f'{first.idx}.99', sentence_idx=first.sentence_idx, start=start_char, end=first.end, text=text)
+            span_tokens.insert(0, token)
+
+    if last.end > end_char:
+        text = token.text[:end_char-last.start]
+        if len(text) > 0:
+            token = Token(idx=f'{last.idx}.99', sentence_idx=last.sentence_idx, start=last.start, end=end_char, text=text)
+            span_tokens.append(token)
+
+    if len(span_tokens) == 0:
+        return None
+
+    return span_tokens

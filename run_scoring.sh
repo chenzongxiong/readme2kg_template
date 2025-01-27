@@ -7,6 +7,6 @@ python src/scoring.py --reference_dir ./data/train --prediction_dir ./results/pr
 if [ "$mode" = "-debug" ];
 then
     python src/scoring.py --reference_dir ./data/train --prediction_dir ./results/missing_files
-    python src/scoring.py --reference_dir ./data/train --prediction_dir ./results/dummy
-    python src/scoring.py --reference_dir ./data/train --prediction_dir ./results/empty
+    python src/scoring.py --reference_dir ./data/val --prediction_dir ./results/dummy_all_sent_all_label
+    python src/scoring.py --reference_dir ./data/val --prediction_dir ./results/dummy_all_doc_2_Software
 fi;

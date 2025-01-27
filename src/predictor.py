@@ -40,7 +40,6 @@ class DummpyPredictor(BasePredictor):
         #     sentences=doc.sentences,
         #     tokens=doc.tokens
         # )
-        # NOTE: `replace` has better performance
         result = utils.replace_webanno_annotations(doc, annotations=annotations)
         return result
 
@@ -50,35 +49,10 @@ class DummpyPredictor(BasePredictor):
         '''
         start_char = random.randint(tokens[0].start, tokens[-1].end - 1)
         end_char = random.randint(start_char + 1, tokens[-1].end)
-
-        span_tokens = []
-        for token in tokens:
-            if token.end < start_char:
-                continue
-            if token.start > end_char:
-                continue
-
-            span_tokens.append(token)
-
-        if len(span_tokens) == 0:
+        # NOTE: Since our NER task is character-level, we need handle the tokens at the edge of span carefully.
+        span_tokens = utils.make_span_tokens(tokens, start_char, end_char)
+        if span_tokens is None:
             return None, None
-
-        first, last = span_tokens[0], span_tokens[-1]
-        span_tokens = span_tokens[1:-1]
-        if first.start < start_char:
-            text = token.text[start_char - first.start:]
-            if len(text) > 0:
-                token = Token(idx=f'{first.idx}.99', sentence_idx=first.sentence_idx, start=start_char, end=first.end, text=text)
-                span_tokens.insert(0, token)
-        if last.end > end_char:
-            text = token.text[:end_char-last.start]
-            if len(text) > 0:
-                token = Token(idx=f'{last.idx}.99', sentence_idx=last.sentence_idx, start=last.start, end=end_char, text=text)
-                span_tokens.append(token)
-
-        if len(span_tokens) == 0:
-            return None, None
-
         # Random select a label from LABELS
         label = random.choice(LABELS)
         return span_tokens, label
