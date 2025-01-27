@@ -86,9 +86,9 @@ class DummpyPredictor(BasePredictor):
 
 if __name__ == "__main__":
     import os
-    base_path = './data/test'
+    base_path = './data/train'
     file_names = [fp for fp in os.listdir(base_path) if os.path.isfile(os.path.join(base_path, fp)) and fp.endswith('.tsv')]
-    output_folder = './results/dummy'
+    output_folder = './results/prediction'
     os.makedirs(output_folder, exist_ok=True)
 
     predictor = DummpyPredictor()
