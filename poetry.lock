@@ -191,21 +191,6 @@ doc = ["intersphinx_registry", "jupyterlite-pyodide-kernel", "jupyterlite-sphinx
 test = ["Cython", "array-api-strict (>=2.0,<2.1.1)", "asv", "gmpy2", "hypothesis (>=6.30)", "meson", "mpmath", "ninja", "pooch", "pytest", "pytest-cov", "pytest-timeout", "pytest-xdist", "scikit-umfpack", "threadpoolctl"]
 
 [[package]]
-name = "seqeval"
-version = "1.2.2"
-description = "Testing framework for sequence labeling"
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "seqeval-1.2.2.tar.gz", hash = "sha256:f28e97c3ab96d6fcd32b648f6438ff2e09cfba87f05939da9b3970713ec56e6f"},
-]
-
-[package.dependencies]
-numpy = ">=1.14.0"
-scikit-learn = ">=0.21.3"
-
-[[package]]
 name = "threadpoolctl"
 version = "3.5.0"
 description = "threadpoolctl"
@@ -220,4 +205,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "dd3cc2691492ec475da2f44c12724c1a825713b7ea114f329794755d60d3d1af"
+content-hash = "76befa9de5b88a4c21f7cf0e3590aff3051ccd62e46cd3d3520b8f98b8116b4e"
