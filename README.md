@@ -1,6 +1,6 @@
 # README2KG Template Project
 
-This repository hosts the template project used for the [README2KG Shared Task](https://www.codabench.org/competitions/4925/) hosted on [Condabench](https://www.codabench.org).
+This repository hosts the template project used for the [README2KG Shared Task](https://www.codabench.org/competitions/5396/) hosted on [Condabench](https://www.codabench.org).
 
 
 # Contents
